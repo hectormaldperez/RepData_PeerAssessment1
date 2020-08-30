@@ -13,7 +13,8 @@ Show any code that is needed to
 1. Load the data (i.e. `read.csv()`)
 
 
-```{r dataLoad, echo=TRUE}
+
+```r
 fitdat <-  read.csv("activity.csv")
 ```
 
@@ -21,7 +22,8 @@ fitdat <-  read.csv("activity.csv")
 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
 
-```{r dataTranform, echo=TRUE}
+
+```r
 fitdat$interval <- as.factor(fitdat$interval)
 fitdat$date <- as.Date(fitdat$date)
 ```
@@ -35,25 +37,59 @@ the dataset.
 1. Make a histogram of the total number of steps taken each day
 
 
-```{r histogramPlota, echo=TRUE}
+
+```r
 library(dplyr)
-fitdat2 <- fitdat%>% filter(fitdat$steps!="NA")%>%group_by(date)%>% summarise(totSteps=sum(steps))
-with(fitdat2, hist(totSteps, main="Distribution of total number of steps taken daily", xlab="Steps (Count)"))
+```
 
 ```
+## Warning: package 'dplyr' was built under R version 3.6.2
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+fitdat2 <- fitdat%>% filter(fitdat$steps!="NA")%>%group_by(date)%>% summarise(totSteps=sum(steps))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
+with(fitdat2, hist(totSteps, main="Distribution of total number of steps taken daily", xlab="Steps (Count)"))
+```
+
+![](PA1_template_files/figure-html/histogramPlota-1.png)<!-- -->
 
 
 2. Calculate and report the **mean** and **median** total number of steps taken per day
 
 
-```{r reportingMeanMedian, echo=TRUE}
+
+```r
 meanStepsa <- summary(fitdat2$totSteps)[4]
 medianStepsa <- summary(fitdat2$totSteps)[3]
 ```
 
 
-The **mean** total number of steps taken per day is `r meanStepsa`
-The **median** total number of steps taken per day is `r medianStepsa`
+The **mean** total number of steps taken per day is 1.0766189\times 10^{4}
+The **median** total number of steps taken per day is 1.0765\times 10^{4}
 
 
 ### What is the average daily activity pattern?
@@ -61,23 +97,41 @@ The **median** total number of steps taken per day is `r medianStepsa`
 1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
 
-```{r timeSeriesplota, echo=TRUE}
+
+```r
 library(dplyr)
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.6.2
+```
+
+```r
 mean <- fitdat%>%filter(fitdat$steps!="NA")%>% group_by(interval)%>% summarise(meanSteps=mean(steps))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 ggplot(mean,aes(x=interval,y=meanSteps))+geom_line(group=1) +ggtitle("Time series of average number of steps taken across unique 5-minute interval") + xlab("Interval (shown as 5 min increments)")+ ylab("Mean number of steps")
 ```
+
+![](PA1_template_files/figure-html/timeSeriesplota-1.png)<!-- -->
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 
-```{r maxInterval, echo=TRUE}
+
+```r
 library(dplyr)
 maxt <- mean %>% filter(mean$meanSteps==max(mean$meanSteps))
 max <- maxt[1]
 ```
 
-The 5-minute interval that contains the maximum number of steps is the interval representing `r max` minutes.
+The 5-minute interval that contains the maximum number of steps is the interval representing 835 minutes.
 
 
 ### Imputing missing values
@@ -88,14 +142,14 @@ bias into some calculations or summaries of the data.
 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s) 
 
-```{r missingValues, echo=TRUE}
+
+```r
 fitdatmiss <- fitdat
 missingsumm <- summary(fitdatmiss$steps)
 missing <- missingsumm[7]
-
 ```
 
-The total number of rows with missing values in this data set are `r missing`.
+The total number of rows with missing values in this data set are 2304.
 
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -106,24 +160,33 @@ The total number of rows with missing values in this data set are `r missing`.
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 
-```{r completeData, echo=TRUE}
 
+```r
 index <- with(fitdatmiss, match(interval,mean$interval))
 fitdatmiss$steps <- with(fitdatmiss, ifelse(is.na(steps),mean$meanSteps[index],steps))
-
 ```
 
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
-```{r historgramPlotb, echo=TRUE}
 
+```r
 library(dplyr)
 fitdatmiss2 <- fitdatmiss%>%group_by(date)%>% summarise(totSteps=sum(steps))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 with(fitdatmiss2, hist(totSteps, main="Distribution of the total number of steps taken daily after imputating the data", xlab="Steps (Count)"))
+```
 
+![](PA1_template_files/figure-html/historgramPlotb-1.png)<!-- -->
 
+```r
 #mean <- fitdatb%>% group_by(date)%>% summarise(meanSteps=mean(steps))
 #median <- fitdatb%>% group_by(date)%>%summarise(medianSteps=median(steps, na.rm=TRUE))
 
@@ -132,8 +195,8 @@ medianStepsb <- summary(fitdatmiss2$totSteps)[3]
 ```
 
 
-The **mean** total number of steps taken per day is `r meanStepsb`
-The **median** total number of steps taken per day is `r medianStepsb`
+The **mean** total number of steps taken per day is 1.0766189\times 10^{4}
+The **median** total number of steps taken per day is 1.0766189\times 10^{4}
 
 **Comparing the mean and median of the total number of daily steps taken before and after imputing the data, the values are not that much different in magnitude. Altought, imputing the data did increase the frequency of values closer to the mean and median, removing some of the skewedness from the data. Imputing the data increased the median value slightly.**
 
@@ -148,7 +211,8 @@ the dataset with the filled-in missing values for this part.
 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
 
-```{r weekDays, echo=TRUE}
+
+```r
 fitdatmiss$dayOfweek <- weekdays(as.Date(fitdatmiss$date))
 fitdatmiss$dayType <- ifelse(c(fitdatmiss$dayOfweek=="Friday"|fitdatmiss$dayOfweek=="Saturday"|fitdatmiss$dayOfweek=="Sunday"), "Weekend","Weekday")
 ```
@@ -157,14 +221,24 @@ fitdatmiss$dayType <- ifelse(c(fitdatmiss$dayOfweek=="Friday"|fitdatmiss$dayOfwe
 1. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using **simulated data**:
 
 
-```{r panelPlot, echo=TRUE}
+
+```r
 library(dplyr)
 library(ggplot2)
 meanb <- fitdatmiss%>% group_by(interval,dayType)%>% summarise(meanSteps=mean(steps))
+```
+
+```
+## `summarise()` regrouping output by 'interval' (override with `.groups` argument)
+```
+
+```r
 ggplot(meanb,aes(x=interval,y=meanSteps)) +geom_line(group=1)+facet_grid(dayType~.) +
         ggtitle("Time series of the 5-minute interval avergae number of steps stratified by weekday type")+
         xlab("Interval (Represents 5 minute increments)") +ylab("Mean count of steps")
 ```
+
+![](PA1_template_files/figure-html/panelPlot-1.png)<!-- -->
 
 
 ** The time series stratified by weekday type (weekend or weekday) and stesps taken suggest that during the earlier portion of the day, the individual took more steps than on the weekend. **
